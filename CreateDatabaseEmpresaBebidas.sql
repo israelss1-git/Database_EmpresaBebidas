@@ -1,0 +1,103 @@
+/* Database [EMPRESA_BEBIDAS]
+ * Script Date: 04/10/2020
+ * Author Israel Silva de Souza
+ * Description: Base de dados para estudos de caso, com componentes de negócio de uma empresa de bebidas.
+ */
+ 
+CREATE DATABASE EMPRESA_BEBIDAS
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'EMPRESA_BEBIDAS', 
+  FILENAME = N'C:\DataBases\MSSQL\DATA\EMPRESA_BEBIDAS.mdf' , 
+  SIZE = 10,			-- Tamanho do arquivo em MB
+  MAXSIZE = UNLIMITED,	-- Tamanho máximo do arquivo
+  FILEGROWTH = 5 )		-- Tamanho do crescimento automático, em MB
+ LOG ON 
+( NAME = N'EMPRESA_BEBIDAS_log', 
+  FILENAME = N'C:\DataBases\MSSQL\DATA\EMPRESA_BEBIDAS_log.ldf' , 
+  SIZE = 5MB , 
+  MAXSIZE = 25MB , 
+  FILEGROWTH = 5MB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+
+USE EMPRESA_BEBIDAS
+GO
+
+CREATE TABLE dbo.CLIENTES(
+	CPF varchar(11) NOT NULL,
+	NOME varchar(50) NULL,
+	ENDERECO varchar(100) NULL,
+	BAIRRO varchar(50) NULL,
+	CIDADE varchar(50) NULL,
+	ESTADO varchar(50) NULL,
+	CEP varchar(8) NULL,
+	DATA_NASCIMENTO date NULL,
+	IDADE int NULL,
+	SEXO varchar(1) NULL,
+	LIMITE_CREDITO float NULL,
+	VOLUME_COMPRA float NULL,
+	PRIMEIRA_COMPRA bit NULL,
+ CONSTRAINT PK_CLIENTES PRIMARY KEY CLUSTERED (CPF ASC)
+)
+GO
+
+CREATE TABLE dbo.VENDEDORES(
+	MATRICULA varchar(5) NOT NULL,
+	NOME varchar(100) NULL,
+	BAIRRO varchar(50) NULL,
+	COMISSAO float NULL,
+	DATA_ADMISSAO date NULL,
+	FERIAS bit NULL,
+ CONSTRAINT PK_VENDDORES PRIMARY KEY CLUSTERED (MATRICULA ASC) ON [PRIMARY]
+)
+GO
+
+CREATE TABLE dbo.PRODUTOS(
+	CODIGO varchar(10) NOT NULL,
+	DESCRITOR varchar(100) NULL,
+	SABOR varchar(50) NULL,
+	TAMANHO varchar(50) NULL,
+	EMBALAGEM varchar(50) NULL,
+	PRECO_LISTA float NULL,
+ CONSTRAINT PK_PRODUTOS PRIMARY KEY CLUSTERED (CODIGO ASC)
+) 
+GO
+
+/*
+ * Tabela de notas fiscais. Relaciona dados do cliente, dos vendedores com a transação de compra de produtos
+ */
+CREATE TABLE dbo.NOTAS(
+	NUMERO varchar(5) NOT NULL,
+	DATA_NOTA date NULL,
+	CPF varchar(11) NULL,			-- FK COM TABELA CLIENTES
+	MATRICULA varchar(5) NULL,	-- FK COM TABELA VENDEDORES
+	IMPOSTO float NULL,
+ CONSTRAINT PK_NOTAS PRIMARY KEY CLUSTERED (NUMERO ASC),
+ CONSTRAINT FK_NOTAS_CLIENTES FOREIGN KEY(CPF) REFERENCES dbo.CLIENTES (CPF),
+ CONSTRAINT FK_NOTAS_VENDEDORES FOREIGN KEY(MATRICULA) REFERENCES dbo.VENDEDORES (MATRICULA)
+)
+GO
+
+/*
+ * Tabela de ítens vendidos por transação. Relaciona dados da nota, do produto vendido 
+ * com os dados da transação. Tabela de relacionamento entre as tabelas produtos e notas que 
+ * possem relação de n paar n.
+ */
+CREATE TABLE dbo.ITENS_VENDIDOS(
+	NUMERO varchar(5) NOT NULL,		-- FK COM TABELA NOTAS
+	CODIGO varchar(10) NOT NULL,	-- FK COM TABELA PRODUTOS
+	QUANTIDADE int NULL,
+	PRECO float NULL,
+ CONSTRAINT PK_ITENS_VENDIDOS PRIMARY KEY CLUSTERED (NUMERO ASC, CODIGO ASC), -- CHAVE COMPOSTA
+ CONSTRAINT FK_ITENS_VENDIDOS_NOTAS FOREIGN KEY(NUMERO) REFERENCES dbo.NOTAS (NUMERO),
+ CONSTRAINT FK_ITENS_VENDIDOS_PRODUTOS FOREIGN KEY(CODIGO) REFERENCES dbo.PRODUTOS (CODIGO)
+)
+GO
+
+
+
+
+
+
+
